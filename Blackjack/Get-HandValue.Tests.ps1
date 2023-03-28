@@ -3,10 +3,12 @@ Using Module '..\PSCards.psm1'
 Describe 'Hand Value Calculation' {
 
 	Context 'Script Parameters' {
-		It 'Should have the Hand parameter.' {
+		It 'Should have the required, not-nullable parameter named Hand that allows an empty collection.' {
 			$hand = [Card[]]::new(0)
 
-			Get-Command '.\Deal-Card' | Should -HaveParameter 'Hand' -Mandatory -Type $hand.GetType()
+			Get-Command '.\Get-HandValue' | Should -HaveParameter 'Hand' -Mandatory -Type $hand.GetType()
+			{ & '.\Get-HandValue' -Hand $null } | Should -Throw
+			{ & '.\Get-HandValue' -Hand $hand } | Should -Not -Throw
 		}
 	}
 

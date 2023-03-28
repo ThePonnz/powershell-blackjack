@@ -1,10 +1,9 @@
 Using Module '.\PSCards.psm1'
 
-Describe 'PS Cards Tests' {
+Describe 'PSCards' {
 
-	# Cards should have a Suit and Value property. Suits are defined as an enumeration and value is an int from 1 to 13.
 	Context 'Creating New Card' {
-		It 'Ensure the card has the Suit and Value properties.' {
+		It 'Creates a Card object with Suit and Value properties.' {
 			$properties = [Card]::new(12, [Suit]::Spade).GetType().GetProperties()
 
 			$suitProperty = $properties | Where-Object { $_.Name -eq 'Suit' }
@@ -15,9 +14,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# The constructor for the Card class should transfer the values to the properites.
 	Context 'Creating New Card' {
-		It 'Ensure the values passed to the constructor are the correct suit and value.' {
+		It 'The values passed to the constructor are transferred to the properties.' {
 			$card = [Card]::new(12, [Suit]::Spade)
 
 			$card.Suit | Should -Be 'Spade'
@@ -25,9 +23,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# Creating a new Card object with an invlaid value should throw an exception.
 	Context 'Creating New Card' {
-		It 'Ensure the card value must be valid.' {
+		It 'The card value must be between 1 to 13 representing A, 1 - 10, J, Q, K.' {
 			{ [Card]::new(0, [Suit]::Spade) } | Should -Throw
 			{ [Card]::new(1, [Suit]::Spade) } | Should -Not -Throw
 			{ [Card]::new(2, [Suit]::Spade) } | Should -Not -Throw
@@ -46,9 +43,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# Creating a new Card object with an invlaid suit should throw an exception.
 	Context 'Creating New Card' {
-		It 'Ensure the card suit must be valid.' {
+		It 'The card suit must be valid.' {
 			{ [Card]::new(1, 0) } | Should -Throw
 			{ [Card]::new(1, [Suit]::Heart) } | Should -Not -Throw
 			{ [Card]::new(1, [Suit]::Diamond) } | Should -Not -Throw
@@ -58,10 +54,9 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# When outputting the value of a card, ToString() should follow the pattern <card_value><card_suit>. i.e. A♠, 3♣, 10♦, Q♥
-	# Ensure that the ToString() method outputs the last character of each card as the suit symbol.
+	# When outputting the value of a card, ToString() should follow the pattern <card_value><card_suit>. i.e. A♠, 3♣, 10♦, Q♥.
 	Context 'Outputting Card' {
-		It 'Ensure the ToString() method property displays suit.' {
+		It 'The ToString() method property displays suit.' {
 			$heartCard = [Card]::new(1, [Suit]::Heart)
 			$diamondCard = [Card]::new(1, [Suit]::Diamond)
 			$clubCard = [Card]::new(1, [Suit]::Club)
@@ -75,10 +70,9 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# When outputting the value of a card, ToString() should follow the pattern <card_value><card_suit>. i.e. A♠, 3♣, 10♦, Q♥
-	# Ensure that the ToString() will display the values of 1..13 as A, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K.
+	# When outputting the value of a card, ToString() should follow the pattern <card_value><card_suit>. i.e. A♠, 3♣, 10♦, Q♥.
 	Context 'Outputting Card' {
-		It 'Ensure the ToString() method property displays value.' {
+		It 'The ToString() method property displays value.' {
 			$cards = [Card]::new(1, [Suit]::Club), [Card]::new(2, [Suit]::Club), [Card]::new(3, [Suit]::Club), [Card]::new(4, [Suit]::Club), [Card]::new(5, [Suit]::Club), [Card]::new(6, [Suit]::Club), [Card]::new(7, [Suit]::Club), [Card]::new(8, [Suit]::Club), [Card]::new(9, [Suit]::Club), [Card]::new(10, [Suit]::Club), [Card]::new(11, [Suit]::Club), [Card]::new(12, [Suit]::Club), [Card]::new(13, [Suit]::Club)
 
 			# Get all bug the last character that ToString() produces for each card.
@@ -89,9 +83,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# A deck should start with 52 unique cards comparised of 4 suits each with 13 cards and no jokers.
 	Context 'New Deck' {
-		It 'Ensure that there are 52 cards in the deck.' {
+		It 'There are 52 cards in the deck.' {
 			$deck = [Deck]::new()
 
 			$cards = $deck.DealCards(52)
@@ -99,9 +92,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# The deck should start with 52 cards and throw an exception when attempting to deal more cards than are in the deck.
 	Context 'New Deck' {
-		It 'Ensure that an exception is thrown when dealing more than the number of cards in the deck.' {
+		It 'An exception is thrown when dealing more than the number of cards in the deck.' {
 			$deck = [Deck]::new()
 
 			{ $deck.DealCards(53) } | Should -Throw
@@ -110,9 +102,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# A new deck should have 4 suits: heart, diamond, club, and spade.
 	Context 'New Deck' {
-		It 'Ensure that there are 4 correct suits in the deck.' {
+		It 'There are 4 correct suits in the deck.' {
 			$deck = [Deck]::new()
 
 			$cards = $deck.DealCards(52)
@@ -127,9 +118,8 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# A new deck will have 4 suits each with 13 distinct values from A..K.
 	Context 'New Deck' {
-		It 'Ensure that there are 13 unique cards of each suit in the deck.' {
+		It 'There are 13 unique cards of each suit in the deck.' {
 			$deck = [Deck]::new()
 
 			$cards = $deck.DealCards(52)
@@ -144,7 +134,6 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# A new deck will place the the cards in suit order heart, diamond, club, spade and value order from A..K.
 	Context 'New Deck' {
 		It 'Starts in an unshuffled state.' {
 			$deck = [Deck]::new()
@@ -155,7 +144,6 @@ Describe 'PS Cards Tests' {
 		}
 	}
 
-	# Shuffling the deck will change the order of the cards.
 	Context 'Shuffling Deck' {
 		It 'Ensure that the card order changes.' {
 			$deck = [Deck]::new()

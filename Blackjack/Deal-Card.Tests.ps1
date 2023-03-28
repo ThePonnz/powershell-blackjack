@@ -3,23 +3,28 @@ Using Module '..\PSCards.psm1'
 Describe 'Deal Card Tests' {
 	
 	Context 'Script Parameters' {
-		It 'Should have the Deck parameter.' {
+		It 'Should have the required, not-nullable parameter named Deck.' {
 			$deck = [Deck]::new()
+			$hand = [Card[]]::new(0)
 
 			Get-Command '.\Deal-Card' | Should -HaveParameter 'Deck' -Mandatory -Type $deck.GetType()
+			{ & '.\Deal-Card' -Deck $null -Hand $hand } | Should -Throw
 		}
 	}
 	
 	Context 'Script Parameters' {
-		It 'Should have the Hand parameter.' {
+		It 'Should have the required, not-nullable parameter named Hand that allows an empty collection.' {
+			$deck = [Deck]::new()
 			$hand = [Card[]]::new(0)
 
 			Get-Command '.\Deal-Card' | Should -HaveParameter 'Hand' -Mandatory -Type $hand.GetType()
+			{ & '.\Deal-Card' -Deck $deck -Hand $null } | Should -Throw
+			{ & '.\Deal-Card' -Deck $deck -Hand $hand } | Should -Not -Throw
 		}
 	}
 
 	Context 'Return Value' {
-		It 'Should return a hand (array of cards).' {
+		It 'Returns a hand (array of cards).' {
 			$deck = [Deck]::new()
 			$hand = @()
 
@@ -38,7 +43,7 @@ Describe 'Deal Card Tests' {
 	}
 	
 	Context 'Hitting the Player or Dealer' {
-		It 'Should add 1 card to the hand from the top of the deck.' {
+		It 'Adds 1 card to the hand from the top of the deck.' {
 			$deck = [Deck]::new()
 			$hand = @()
 
