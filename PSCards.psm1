@@ -9,12 +9,12 @@ Enum Suit {
 
 Class Card {
 
-	static [Hashtable] $CardValues = @{
+	Static Hidden [Hashtable] $CardValues = @{
 		1 = 'A'; 2 = '2'; 3 = '3'; 4 = '4'; 5 = '5'; 6 = '6'; 7 = '7';
 		8 = '8'; 9 = '9'; 10 = '10'; 11 = 'J'; 12 = 'Q'; 13 = 'K'
 	}
 
-	static [Hashtable] $SuitValues = @{
+	Static Hidden [Hashtable] $SuitValues = @{
 		[Suit]::Heart = '♥'; [Suit]::Diamond = '♦';
 		[Suit]::Club = '♣'; [Suit]::Spade = '♠'
 	}
@@ -47,10 +47,6 @@ Class Deck {
 	Hidden [List[Card]] $Cards
 
 	Deck() {
-		$this.Reset()
-	}
-
-	Reset() {
 		$this.Cards = New-Object 'List[Card]'
 		For ($suitIndex = 1; $suitIndex -le 4; $suitIndex++) {
 			For ($valueIndex = 1; $valueIndex -le 13; $valueIndex++) {
