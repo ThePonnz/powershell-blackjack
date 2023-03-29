@@ -26,7 +26,7 @@ Function Take-PlayerTurn {
 		Write-Host "Your hand is $Hand with a value of $($handValue.Value)."
 
 		If ($handValue.IsBlackjack) {
-			Write-Host -ForegroundColor 'DarkMagenta' 'You got 21!'
+			Write-Host -ForegroundColor 'DarkMagenta' 'You got blackjack!'
 			$isContinuing = $false
 		}
 		ElseIf (-not $handValue.IsBusted) {
@@ -87,6 +87,7 @@ If ($shouldDealerTakeTurn) {
 		}
 	} While ((-not $state.DidStand) -and (-not $state.Score.IsBusted))
 }
+Write-Host "The dealer hand is $($hands.DealerHand) with a value of $($dealerValue.Value)."
 
 Write-Host
 Write-Host "Dealer Score:   $($dealerValue.Value)"
@@ -96,18 +97,18 @@ For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 
 Write-Host
 For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
-	$playerValue = & '.\Get-HandValue' -Hand $hands.PlayerHands[$playerIndex]
+	$playerValue = $playerScores[$playerIndex]
 
 	Write-Host -NoNewline "Player $($playerIndex + 1) "
-	If ($dealerValue.Score.IsBusted -and -not $playerValue.Score.IsBusted) {
+	If ($dealerValue.IsBusted -and -not $playerValue.IsBusted) {
 		Write-Host -NoNewline -ForegroundColor 'DarkGreen' 'wins'
 		Write-Host '!'
 	}
-	ElseIf ($playerValue.Score.IsBusted) {
+	ElseIf ($playerValue.IsBusted) {
 		Write-Host -NoNewline -ForegroundColor 'DarkRed' 'busted'
 		Write-Host '.'
 	}
-	ElseIf ($dealerValue.Score.IsBusted -or $playerValue.Value -gt $dealerValue.Value) {
+	ElseIf ($dealerValue.IsBusted -or $playerValue.Value -gt $dealerValue.Value) {
 		Write-Host -NoNewline -ForegroundColor 'DarkGreen' 'wins'
 		Write-Host '!'
 	}
