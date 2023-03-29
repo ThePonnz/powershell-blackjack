@@ -23,20 +23,20 @@ Function Take-PlayerTurn {
 
 	Do {
 		$handValue = & '.\Get-HandValue' -Hand $Hand
-		Write-Host "Your hand is $Hand with a value of $handValue."
+		Write-Host "Your hand is $Hand with a value of $($handValue.Value)."
 
-		If ($handValue -lt 21) {
+		If ($handValue.IsBlackjack) {
+			Write-Host -ForegroundColor 'DarkMagenta' 'You got 21!'
+			$isContinuing = $false
+		}
+		ElseIf (-not $handValue.IsBusted) {
 			Do {
 				$continueResponse = Read-Host -Prompt 'Would you like to hit'
 				$isContinuing = $continueResponse -match '^(Yes|Y)$'
-			} While (-not $continueResponse -match '^(Yes|Y|No|N)$')
+			} While ($continueResponse -notmatch '^(Yes|Y|No|N)$')
 			If ($isContinuing) {
 				$Hand = & '.\Deal-Card' -Deck $deck -Hand $Hand
 			}
-		}
-		ElseIf ($handValue -eq 21) {
-			Write-Host -ForegroundColor 'DarkMagenta' 'You got 21!'
-			$isContinuing = $false
 		}
 		Else {
 			Write-Host -NoNewline 'Sorry; '
@@ -59,55 +59,39 @@ Write-Host "The dealer has a $($hands.DealerHand[1]) facing up."
 For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	$hands.PlayerHands[$playerIndex] = Take-PlayerTurn -Hand $hands.PlayerHands[$playerIndex] -PlayerNumber ($playerIndex + 1)
 }
+$playerScores = @($hands.PlayerHands | ForEach-Object { & '.\Get-HandValue' -Hand $_ })
+$shouldDealerTakeTurn = ($playerScores | Where-Object { $_.Value -le 21 } | Measure-Object).Count -gt 0
 
-Function Take-DealerTurn {
-	Param (
-		[Card[]] $Hand
-	)
-
+If ($shouldDealerTakeTurn) {
 	Write-Host
 	Write-Host "Dealer's turn."
-	$handValue = & '.\Get-HandValue' -Hand $Hand
-	Write-Host "The dealer hand is $Hand with a value of $handValue."
+	$dealerValue = & '.\Get-HandValue' -Hand $hands.DealerHand
 
 	Do {
-		$isContinuing = $false
-		If ($handValue -le 21) {
-			If ($handValue -le 16) {
-				$Hand = & '.\Deal-Card' -Deck $deck -Hand $Hand
-				$card = $Hand | Select-Object -Last 1
-				Write-Host "Dealer hit and got a $card."
-				$handValue = & '.\Get-HandValue' -Hand $Hand
-				Write-Host "The dealer hand is $Hand with a value of $handValue."
-				$isContinuing = $handValue -le 16
-			}
-			Else {
-				Write-Host 'Dealer stands.'
-			}
+		Write-Host "The dealer hand is $($hands.DealerHand) with a value of $($dealerValue.Value)."
+		$state = & '.\Take-DealerTurn' -Deck $deck -Hand $hands.DealerHand
+		$hands.DealerHand = $state.Hand
+		$dealerValue = $state.Score
+		If ($state.DidHit) {
+			$card = $hands.DealerHand | Select-Object -Last 1
+			Write-Host "Dealer hit and got a $card."
 		}
-		
-		If ($handValue -eq 21) {
-			Write-Host -ForegroundColor 'DarkMagenta' 'Dealer got 21.'
+		If ($state.Score.IsBlackjack) {
+			Write-Host -ForegroundColor 'DarkMagenta' 'Dealer got blackjack.'
 		}
-		ElseIf ($handValue -gt 21) {
+		ElseIf ($state.DidStand) {
+			Write-Host 'Dealer stands.'
+		}
+		If ($state.Score.IsBusted) {
 			Write-Host -ForegroundColor 'DarkRed' 'The dealer busted.'
 		}
-	} While ($isContinuing)
-
-	Return $Hand
+	} While (-not $state.DidStand -and $state.DidHit)
 }
-
-$playerScores = @($hands.PlayerHands | ForEach-Object { & '.\Get-HandValue' -Hand $_ })
-$shouldDealerTakeTurn = ($playerScores | Where-Object { $_ -le 21 } | Measure-Object).Count -gt 0
-If ($shouldDealerTakeTurn) {
-	$hands.DealerHand = Take-DealerTurn -Deck $deck -Hand $hands.DealerHand
-}
-$dealerValue = & '.\Get-HandValue' -Hand $hands.DealerHand
 
 Write-Host
-Write-Host "Dealer Score:   $dealerValue"
+Write-Host "Dealer Score:   $($dealerValue.Value)"
 For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
-	Write-Host "Player $($playerIndex + 1) Score: $($playerScores[$playerIndex])"
+	Write-Host "Player $($playerIndex + 1) Score: $($playerScores[$playerIndex].Value)"
 }
 
 Write-Host
@@ -115,22 +99,23 @@ For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	$playerValue = & '.\Get-HandValue' -Hand $hands.PlayerHands[$playerIndex]
 
 	Write-Host -NoNewline "Player $($playerIndex + 1) "
-	If ($dealerValue -gt 21 -and $playerValue -le 21) {
-
-	}
-	If ($playerValue -gt 21) {
-		Write-Host -NoNewline -ForegroundColor 'DarkRed' 'busted'
-		Write-Host '.'
-	}
-	ElseIf ($dealerValue -gt 21 -or $playerValue -gt $dealerValue) {
+	If ($dealerValue.Score.IsBusted -and -not $playerValue.Score.IsBusted) {
 		Write-Host -NoNewline -ForegroundColor 'DarkGreen' 'wins'
 		Write-Host '!'
 	}
-	ElseIf ($playerValue -eq $dealerValue) {
+	ElseIf ($playerValue.Score.IsBusted) {
+		Write-Host -NoNewline -ForegroundColor 'DarkRed' 'busted'
+		Write-Host '.'
+	}
+	ElseIf ($dealerValue.Score.IsBusted -or $playerValue.Value -gt $dealerValue.Value) {
+		Write-Host -NoNewline -ForegroundColor 'DarkGreen' 'wins'
+		Write-Host '!'
+	}
+	ElseIf ($playerValue.Value -eq $dealerValue.Value) {
 		Write-Host -NoNewline -ForegroundColor 'DarkBlue' 'pushes'
 		Write-Host '.'
 	}
-	ElseIf ($playerValue -lt $dealerValue) {
+	ElseIf ($playerValue.Value -lt $dealerValue.Value) {
 		Write-Host -NoNewline -ForegroundColor 'DarkRed' 'loses'
 		Write-Host '.'
 	}

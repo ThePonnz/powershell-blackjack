@@ -12,13 +12,30 @@ Describe 'Hand Value Calculation' {
 		}
 	}
 
+	Context 'Return Value' {
+		It 'Returns a hashtable with the keys Value, IsBlackjack, and IsBusted.' {
+			$hand = [Card[]]::new(0)
+
+			$hands = & '.\Get-HandValue' -Hand $hand
+
+			$hands | Should -Not -BeNullOrEmpty
+			$hands | Should -BeOfType [Hashtable]
+			$hands.Keys | Should -Contain 'Value'
+			$hands.Value | Should -BeOfType [Int32]
+			$hands.Keys | Should -Contain 'IsBlackjack'
+			$hands.IsBlackjack | Should -BeOfType [bool]
+			$hands.Keys | Should -Contain 'IsBusted'
+			$hands.IsBusted | Should -BeOfType [bool]
+		}
+	}
+
 	Context 'Default Score' {
 		It 'Should be 0.' {
 			$hand = [Card[]]::new(0)
 
 			$handValue = & '.\Get-HandValue' -Hand $hand
 
-			$handValue | Should -Be 0
+			$handValue.Value | Should -Be 0
 		}
 	}
 
@@ -29,7 +46,7 @@ Describe 'Hand Value Calculation' {
 				
 				$handValue = & '.\Get-HandValue' -Hand $hand
 
-				$handValue | Should -Be $value
+				$handValue.Value | Should -Be $value
 			}
 		}
 	}
@@ -41,7 +58,7 @@ Describe 'Hand Value Calculation' {
 
 				$handValue = & '.\Get-HandValue' -Hand $hand
 
-				$handValue | Should -Be 10
+				$handValue.Value | Should -Be 10
 			}
 		}
 	}
@@ -55,7 +72,7 @@ Describe 'Hand Value Calculation' {
 
 			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
 
-			$handValue | Should -Be 21
+			$handValue.Value | Should -Be 21
 		}
 	}
 
@@ -69,7 +86,7 @@ Describe 'Hand Value Calculation' {
 
 			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
 
-			$handValue | Should -Be 13
+			$handValue.Value | Should -Be 13
 		}
 	}
 
@@ -83,7 +100,82 @@ Describe 'Hand Value Calculation' {
 
 			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
 
-			$handValue | Should -Be 21
+			$handValue.Value | Should -Be 21
+		}
+	}
+
+	Context 'Evaluating Blackjack' {
+		It 'Should be a blackjack for a score of 21.' {
+			$hand = @(
+				[Card]::new(10, [Suit]::Club),
+				[Card]::new(10, [Suit]::Diamond),
+				[Card]::new(1, [Suit]::Spade)
+			)
+
+			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
+
+			$handValue.Value | Should -Be 21
+			$handValue.IsBlackjack | Should -Be $true
+		}
+	}
+
+	Context 'Evaluating Blackjack' {
+		It 'Should not be a blackjack for a score under 21.' {
+			$hand = @(
+				[Card]::new(10, [Suit]::Club),
+				[Card]::new(9, [Suit]::Diamond),
+				[Card]::new(1, [Suit]::Spade)
+			)
+
+			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
+
+			$handValue.Value | Should -Be 20
+			$handValue.IsBlackjack | Should -Be $false
+		}
+	}
+
+	Context 'Evaluating Blackjack' {
+		It 'Should not be a blackjack for a score over 21.' {
+			$hand = @(
+				[Card]::new(10, [Suit]::Club),
+				[Card]::new(10, [Suit]::Diamond),
+				[Card]::new(2, [Suit]::Spade)
+			)
+
+			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
+
+			$handValue.Value | Should -Be 22
+			$handValue.IsBlackjack | Should -Be $false
+		}
+	}
+
+	Context 'Evaluating Busted' {
+		It 'Should be busted if over 21.' {
+			$hand = @(
+				[Card]::new(10, [Suit]::Club),
+				[Card]::new(10, [Suit]::Diamond),
+				[Card]::new(2, [Suit]::Spade)
+			)
+
+			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
+
+			$handValue.Value | Should -Be 22
+			$handValue.IsBusted | Should -Be $true
+		}
+	}
+
+	Context 'Evaluating Busted' {
+		It 'Should not be busted if 21 or under.' {
+			$hand = @(
+				[Card]::new(10, [Suit]::Club),
+				[Card]::new(10, [Suit]::Diamond),
+				[Card]::new(1, [Suit]::Spade)
+			)
+
+			$handValue = & '.\Get-HandValue.ps1' -Hand $hand
+
+			$handValue.Value | Should -Be 21
+			$handValue.IsBusted | Should -Be $false
 		}
 	}
 
