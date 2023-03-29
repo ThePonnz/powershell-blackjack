@@ -85,7 +85,7 @@ If ($shouldDealerTakeTurn) {
 		If ($state.Score.IsBusted) {
 			Write-Host -ForegroundColor 'DarkRed' 'The dealer busted.'
 		}
-	} While (-not $state.DidStand -and $state.DidHit)
+	} While ((-not $state.DidStand) -and (-not $state.Score.IsBusted))
 }
 
 Write-Host
