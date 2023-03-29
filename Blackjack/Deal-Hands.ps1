@@ -1,4 +1,3 @@
-Using Module '..\PSCards.psm1'
 Using Namespace System.Collections.Generic
 
 Param (

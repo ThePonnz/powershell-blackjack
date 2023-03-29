@@ -40,4 +40,8 @@ If ($aceCount -gt 0) {
 	$score = Get-Score -CountOfAces $aceCount -NonAceScore $score
 }
 
-Return $score
+Return @{
+	Value = [int]$score
+	IsBlackjack = $score -eq 21
+	IsBusted = $score -gt 21
+}
