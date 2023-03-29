@@ -60,12 +60,13 @@ For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	$hands.PlayerHands[$playerIndex] = Take-PlayerTurn -Hand $hands.PlayerHands[$playerIndex] -PlayerNumber ($playerIndex + 1)
 }
 $playerScores = @($hands.PlayerHands | ForEach-Object { & '.\Get-HandValue' -Hand $_ })
-$shouldDealerTakeTurn = ($playerScores | Where-Object { $_.Value -le 21 } | Measure-Object).Count -gt 0
 
+$shouldDealerTakeTurn = ($playerScores | Where-Object { $_.Value -le 21 } | Measure-Object).Count -gt 0
+$dealerValue = & '.\Get-HandValue' -Hand $hands.DealerHand
+
+Write-Host
 If ($shouldDealerTakeTurn) {
-	Write-Host
 	Write-Host "Dealer's turn."
-	$dealerValue = & '.\Get-HandValue' -Hand $hands.DealerHand
 
 	Do {
 		Write-Host "The dealer hand is $($hands.DealerHand) with a value of $($dealerValue.Value)."
@@ -86,6 +87,9 @@ If ($shouldDealerTakeTurn) {
 			Write-Host -ForegroundColor 'DarkRed' 'The dealer busted.'
 		}
 	} While ((-not $state.DidStand) -and (-not $state.Score.IsBusted))
+}
+Else {
+	Write-Host "Dealer stands because all players busted."
 }
 Write-Host "The dealer hand is $($hands.DealerHand) with a value of $($dealerValue.Value)."
 
