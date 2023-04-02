@@ -1,7 +1,15 @@
+<#
+	.SYNOPSIS
+	Deals a card to a player.
+	.OUTPUTS
+	The hand of the player that has been delt to.
+#>
 Using Module '..\PSCards.psm1'
 
 Param (
+	# The deck for the game.
 	[Deck][Parameter(Mandatory=$true)][ValidateNotNull()] $Deck,
+	# The hand of the player being delt to.
 	[Card[]][Parameter(Mandatory=$true)][ValidateNotNull()][AllowEmptyCollection()] $Hand
 )
 

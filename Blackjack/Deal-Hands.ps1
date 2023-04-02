@@ -1,8 +1,16 @@
+<#
+	.SYNOPSIS
+	Deals the hands before the game starts.
+	.OUTPUTS
+	A hashtable containing both the dealer and player hands.
+#>
 Using Module '..\PSCards.psm1'
 Using Namespace System.Collections.Generic
 
 Param (
+	# The deck for the game.
 	[Deck][Parameter(Mandatory=$true)][ValidateNotNull()] $Deck,
+	# The number of human players in the game. 7 is the max as that's typical at a blackjack table.
 	[int][Parameter(Mandatory=$true)][ValidateNotNull()][ValidateRange(1, 7)] $NumberOfPlayers
 )
 

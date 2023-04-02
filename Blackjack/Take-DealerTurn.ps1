@@ -1,7 +1,15 @@
+<#
+	.SYNOPSIS
+	Executes 1 round of the dealer's turn. If the DidHit value is true, continue calling this method until DidStand is true or the score indicates that the dealer's turn is over.
+	.OUTPUTS
+	A hashtable indicate if the dealer hit, stood, the score, and the hand after taking this turn.
+#>
 Using Module '..\PSCards.psm1'
 
 Param (
+	# The deck for the game.
 	[Deck][Parameter(Mandatory=$true)][ValidateNotNull()] $Deck,
+	# The dealer's hand.
 	[Card[]][Parameter(Mandatory=$true)][ValidateNotNull()][AllowEmptyCollection()] $Hand
 )
 

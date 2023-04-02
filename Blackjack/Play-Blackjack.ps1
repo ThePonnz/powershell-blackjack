@@ -1,18 +1,35 @@
 Using Module '..\PSCards.psm1'
 
 Clear-Host
+
+# Prompt for how many humans are playing.
 Do {
 	$numberOfPlayers = Read-Host -Prompt 'Enter the number of players'
 	$isValidNumber = $numberOfPlayers -match '^(1|2|3|4|5|6|7)$'
 } While (-not $isValidNumber)
 $numberOfPlayers = [Convert]::ToInt32($numberOfPlayers)
 
+# Shuffle the deck.
 Write-Host -NoNewline 'Shuffling the deck... '
 $deck = [Deck]::new()
 $deck.Shuffle()
 Write-Host -ForegroundColor 'DarkCyan' 'Done'
 
+# Deal the hands to the players.
+Write-Host -NoNewline 'Dealing the cards... '
+$hands = & '.\Deal-Hands' -Deck $deck -NumberOfPlayers $numberOfPlayers
+Write-Host -ForegroundColor 'DarkCyan' 'Done'
+
+Write-Host
+Write-Host "The dealer has a $($hands.DealerHand[1]) facing up."
+
 Function Take-PlayerTurn {
+	<#
+		.SYNOPSIS
+		Prompts a human player to hit or stand and shows the value of their hand.
+		.OUTPUTS
+		The hand of the player after they've taken their turn.
+	#>
 	Param (
 		[int] $PlayerNumber,
 		[Card[]] $Hand
@@ -49,13 +66,7 @@ Function Take-PlayerTurn {
 	Return $Hand
 }
 
-Write-Host -NoNewline 'Dealing the cards... '
-$hands = & '.\Deal-Hands' -Deck $deck -NumberOfPlayers $numberOfPlayers
-Write-Host -ForegroundColor 'DarkCyan' 'Done'
-
-Write-Host
-Write-Host "The dealer has a $($hands.DealerHand[1]) facing up."
-
+# Let each human take their turn.
 For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	$hands.PlayerHands[$playerIndex] = Take-PlayerTurn -Hand $hands.PlayerHands[$playerIndex] -PlayerNumber ($playerIndex + 1)
 }
@@ -64,6 +75,7 @@ $playerScores = @($hands.PlayerHands | ForEach-Object { & '.\Get-HandValue' -Han
 $shouldDealerTakeTurn = ($playerScores | Where-Object { $_.Value -le 21 } | Measure-Object).Count -gt 0
 $dealerValue = & '.\Get-HandValue' -Hand $hands.DealerHand
 
+# Let the dealer take their turn.
 Write-Host
 If ($shouldDealerTakeTurn) {
 	Write-Host "Dealer's turn."
@@ -99,6 +111,7 @@ For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	Write-Host "Player $($playerIndex + 1) Score: $($playerScores[$playerIndex].Value)"
 }
 
+# Indicate who wins, loses, and pushes.
 Write-Host
 For ($playerIndex = 0; $playerIndex -lt $numberOfPlayers; $playerIndex++) {
 	$playerValue = $playerScores[$playerIndex]
