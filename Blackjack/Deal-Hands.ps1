@@ -1,18 +1,29 @@
+<#
+	.SYNOPSIS
+	Deals the hands before the game starts.
+	.OUTPUTS
+	A hashtable containing both the dealer and player hands.
+#>
+Using Module '..\PSCards.psm1'
 Using Namespace System.Collections.Generic
 
 Param (
+	# The deck for the game.
 	[Deck][Parameter(Mandatory=$true)][ValidateNotNull()] $Deck,
+	# The number of human players in the game. 7 is the max as that's typical at a blackjack table.
 	[int][Parameter(Mandatory=$true)][ValidateNotNull()][ValidateRange(1, 7)] $NumberOfPlayers
 )
 
-$dealerHand = @()
-$playerHands = [List[Card[]]]::new($NumberOfPlayers)
-1..$NumberOfPlayers | ForEach-Object { $playerHands.Add(@()) }
+Set-Variable -Option 'Constant' -Name 'HAND_CARD_COUNT' -Value 2
 
-ForEach ($deckCount In 1..2) {
-	$dealerHand += $Deck.DealCards(1)
+$dealerHand = [Card[]]::new(0)
+$playerHands = [List[Card[]]]::new($NumberOfPlayers)
+1..$NumberOfPlayers | ForEach-Object { $playerHands.Add([Card[]]::new(0)) }
+
+ForEach ($deckCount In 1..$HAND_CARD_COUNT) {
+	$dealerHand = & '.\Deal-Card' -Deck $Deck -Hand $dealerHand
 	For ($playerIndex = 0; $playerIndex -lt $NumberOfPlayers; $playerIndex++) {
-		$playerHands[$playerIndex] += $Deck.DealCards(1)
+		$playerHands[$playerIndex] = & '.\Deal-Card' -Deck $Deck -Hand $playerHands[$playerIndex]
 	}
 }
 
