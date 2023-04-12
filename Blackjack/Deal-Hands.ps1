@@ -5,7 +5,6 @@
 	A hashtable containing both the dealer and player hands.
 #>
 Using Module '..\PSCards.psm1'
-Using Namespace System.Collections.Generic
 
 Param (
 	# The deck for the game.
@@ -16,9 +15,8 @@ Param (
 
 Set-Variable -Option 'Constant' -Name 'HAND_CARD_COUNT' -Value 2
 
-$dealerHand = [Card[]]::new(0)
-$playerHands = [List[Card[]]]::new($NumberOfPlayers)
-1..$NumberOfPlayers | ForEach-Object { $playerHands.Add([Card[]]::new(0)) }
+$dealerHand = @()
+$playerHands = @(,@() * $NumberOfPlayers)
 
 ForEach ($deckCount In 1..$HAND_CARD_COUNT) {
 	$dealerHand = & '.\Deal-Card' -Deck $Deck -Hand $dealerHand
@@ -29,5 +27,5 @@ ForEach ($deckCount In 1..$HAND_CARD_COUNT) {
 
 Return @{
 	DealerHand = $dealerHand
-	PlayerHands = $playerHands.ToArray()
+	PlayerHands = $playerHands
 }
